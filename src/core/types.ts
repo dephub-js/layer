@@ -90,10 +90,16 @@ export interface BuilderContext<TParser = unknown>
    * Whether the current build produced any file changes.
    */
   changed: boolean;
+
   /**
    * A nested record mapping internal directories and file names to their relative output file paths.
    */
   importsMap: ImportsMap;
+
+  /**
+   * Emits a progress line prefixed with the builder name.
+   */
+  log: (message: string) => void;
 }
 
 /**

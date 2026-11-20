@@ -7,6 +7,7 @@ import {
   logBuildSummary,
   logError,
   logHeader,
+  logMessage,
   setSilent,
 } from '#/utils/log.ts';
 
@@ -165,6 +166,7 @@ export async function useBuilder<TParser = unknown>(
           docType,
           exclude,
           importsMap,
+          log: (message) => logMessage(name, message),
           name,
           outDir,
           outExtension,

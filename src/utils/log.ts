@@ -71,6 +71,11 @@ export function logHeader(
   );
 }
 
+export function logMessage(name: string, message: string) {
+  if (silent) return;
+  console.log(`${formatPrefix(name)} ${message}`);
+}
+
 export function logUpdate(
   variant: Variant,
   { duration, filePath, name }: LogUpdate,
