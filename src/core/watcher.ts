@@ -1,13 +1,13 @@
 /* eslint-disable security/detect-non-literal-fs-filename */
 
-import { path, useCwd } from '@dephub/path';
+import { path } from '@dephub/path';
 import { glob, watch } from 'node:fs/promises';
 
-import { useBuilder } from '#/core/builder.ts';
 import { hasContentDir } from '#/utils/access.ts';
+import { buildLayer } from '#/utils/build.ts';
 import { parseConfig } from '#/utils/config.ts';
 import { formatPattern } from '#/utils/format.ts';
-import { logError, logHeader, logUpdate, setSilent } from '#/utils/log.ts';
+import { logError, logHeader, setSilent } from '#/utils/log.ts';
 
 import type { LayerConfig, Watcher, WatcherConfig } from './types.ts';
 
@@ -87,22 +87,20 @@ export async function useWatcher<TParser = unknown>(
     if (!parsedConfig.ok) return;
     setSilent(parsedConfig.silent);
 
-    const { contentDir, name, outDir } = parsedConfig;
+    const { contentDir, name, outDir, version } = parsedConfig;
+    if (!(await hasContentDir(name, contentDir))) return;
 
-    if (!(await hasContentDir(name, contentDir))) {
-      return;
-    }
-
-    logHeader('watcher', {
+    logHeader('watch', {
       contentDir,
       name,
       outDir,
-      version: watcherConfig.version,
+      version,
     });
 
     try {
-      const builder = (await useBuilder(watcherConfig)).bind(true);
-      await builder(layerConfig);
+      const result = await buildLayer('build', parsedConfig);
+      if (!result.ok) return;
+
       let timer: NodeJS.Timeout | undefined;
       const contentWatcher = watch(contentDir);
 
@@ -117,12 +115,8 @@ export async function useWatcher<TParser = unknown>(
           if (timer) clearTimeout(timer);
 
           timer = setTimeout(async () => {
-            const startTime = performance.now();
-            await builder(layerConfig);
-
-            const duration = performance.now() - startTime;
-            const filePath = path.relative(useCwd(), filename.trim());
-            logUpdate('watcher', { duration, filePath, name });
+            const result_ = await buildLayer('watch', parsedConfig);
+            if (!result_.ok) return;
 
             timer = undefined;
           }, 100);

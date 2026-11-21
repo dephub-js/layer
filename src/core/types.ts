@@ -100,6 +100,11 @@ export interface BuilderContext<TParser = unknown>
    * Emits a progress line prefixed with the builder name.
    */
   log: (message: string) => void;
+
+  /**
+   * Execution mode for the current build run.
+   */
+  mode: 'build' | 'watch';
 }
 
 /**

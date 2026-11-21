@@ -2,7 +2,11 @@
 import { bold, cyan, dim, green, red } from '@dephub/colors';
 import { path } from '@dephub/path';
 
-import type { BuilderConfig, LayerConfig } from '#/core/types.ts';
+import type {
+  BuilderConfig,
+  BuilderContext,
+  LayerConfig,
+} from '#/core/types.ts';
 
 import { formatDuration, formatPrefix } from './format.ts';
 
@@ -15,8 +19,6 @@ interface LogUpdate extends Pick<BuilderConfig, 'name'> {
   duration: number;
   filePath: string;
 }
-
-type Variant = 'builder' | 'watcher';
 
 let silent = false;
 
@@ -58,13 +60,13 @@ export function logError(name: string, message: string) {
 }
 
 export function logHeader(
-  variant: Variant,
+  mode: BuilderContext['mode'],
   { contentDir, name, outDir, version }: LogHeader,
 ) {
   if (silent) return;
   console.log(`\n  ${cyan(bold(name.toUpperCase()))} ${dim(`v${version}`)}`);
   console.log(
-    `\n  ${green('➜')}  ${bold(variant === 'builder' ? 'Building' : 'Watching')}: ${dim(path.resolve(contentDir))}`,
+    `\n  ${green('➜')}  ${bold(mode === 'build' ? 'Building' : 'Watching')}: ${dim(path.resolve(contentDir))}`,
   );
   console.log(
     `  ${green('➜')}  ${bold('Output')}:   ${dim(path.resolve(outDir))}\n`,
@@ -77,11 +79,11 @@ export function logMessage(name: string, message: string) {
 }
 
 export function logUpdate(
-  variant: Variant,
+  mode: BuilderContext['mode'],
   { duration, filePath, name }: LogUpdate,
 ) {
   if (silent) return;
-  const action = variant === 'builder' ? 'built' : 'rebuilt';
+  const action = mode === 'build' ? 'built' : 'rebuilt';
 
   console.log(
     `${formatPrefix(name)} ${green(action)} ${dim(

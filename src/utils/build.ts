@@ -5,50 +5,58 @@ import { path } from '@dephub/path';
 import { writeFile } from '@dephub/write';
 import { mkdir } from 'node:fs/promises';
 
+import type { BuilderContext } from '#/core/types.ts';
+
 import type { ConfigSchema } from './config.ts';
-import type { Entries } from './types.ts';
 
 import { canAccess } from './access.ts';
 import { useCache } from './cache.ts';
-import { hasErrorMessage } from './has.ts';
-import { logError, logUpdate } from './log.ts';
+import { resolveEntries } from './entries.ts';
+import { hasUnknownGroup } from './has.ts';
+import { logError, logMessage, logUpdate } from './log.ts';
 import { getMtime } from './mtime.ts';
 
-interface BuildLayer extends Pick<
-  ConfigSchema,
-  | 'configPath'
-  | 'contentDir'
-  | 'docType'
-  | 'exclude'
-  | 'name'
-  | 'outDir'
-  | 'parser'
-  | 'schemas'
-  | 'transformers'
-> {
-  entries: Entries;
-  verbose: boolean;
-}
-
-export async function buildLayer({
-  configPath,
-  contentDir,
-  docType,
-  entries,
-  exclude,
-  name,
-  outDir,
-  parser,
-  schemas,
-  transformers,
-  verbose,
-}: BuildLayer): Promise<{
+export async function buildLayer(
+  mode: BuilderContext['mode'],
+  {
+    configPath,
+    contentDir,
+    defaultOutDir,
+    docType,
+    exclude,
+    name,
+    outDir,
+    outExtension,
+    parser,
+    pattern,
+    schemas,
+    tasks,
+    transformers,
+    version,
+  }: ConfigSchema,
+): Promise<{
   changed: boolean;
   ok: boolean;
 }> {
   let changed = false;
 
   try {
+    const { entries, importsMap } = await resolveEntries({
+      contentDir,
+      exclude,
+      outDir,
+      outExtension,
+      pattern,
+    });
+
+    if (hasUnknownGroup({ importsMap, name, schemas })) {
+      return { changed, ok: false };
+    }
+
+    if (hasUnknownGroup({ importsMap, name, transformers })) {
+      return { changed, ok: false };
+    }
+
     const cache = await useCache(outDir);
     const cachedConfig = await cache.get('config');
 
@@ -65,20 +73,11 @@ export async function buildLayer({
 
       if (cachedMtime !== mtimeNum || cachedConfig !== configHash) {
         changed = true;
-        const fileStart = performance.now();
+        const start = performance.now();
         let data = await parser(entry);
 
         if (schemas[internalDir]) {
-          try {
-            data = await schemas[internalDir].parseAsync(data);
-          } catch (error) {
-            if (hasErrorMessage(error)) {
-              logError(name, error.message);
-              return { changed, ok: false };
-            }
-
-            throw error;
-          }
+          data = await schemas[internalDir].parseAsync(data);
         }
 
         if (transformers[internalDir]) {
@@ -91,13 +90,11 @@ export async function buildLayer({
 
         await writeFile(outFilePath, JSON.stringify(data, null, 2));
 
-        if (verbose) {
-          logUpdate('builder', {
-            duration: performance.now() - fileStart,
-            filePath: outFilePath,
-            name,
-          });
-        }
+        logUpdate(mode, {
+          duration: performance.now() - start,
+          filePath: outFilePath,
+          name,
+        });
 
         await cache.set(entry, mtimeNum);
       }
@@ -106,8 +103,29 @@ export async function buildLayer({
     if (changed) {
       await cache.set('config', configHash);
     }
+
+    for await (const task of tasks) {
+      await task({
+        changed,
+        contentDir,
+        defaultOutDir,
+        docType,
+        exclude,
+        importsMap,
+        log: (message) => logMessage(name, message),
+        mode,
+        name,
+        outDir,
+        outExtension,
+        parser,
+        pattern,
+        schemas,
+        transformers,
+        version,
+      } satisfies BuilderContext);
+    }
   } catch (error) {
-    if (hasErrorMessage(error)) {
+    if (error instanceof Error) {
       logError(name, error.message);
       return { changed, ok: false };
     }
