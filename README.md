@@ -50,22 +50,23 @@ layer build -c ./config/layer.config.ts
 layer build -s
 ```
 
-**Config file** — `layer.config.ts`:
+### API 🧩
+
+`layer.config.ts`:
 
 ```ts
 import { defineConfig } from '@dephub/layer';
 
 export default defineConfig({
-  contentDir: './content',
-  outDir: '.layer',
+  contentDir: './content/services',
+  outDir: './dist/services',
   exclude: ['_drafts'],
 });
 ```
 
-### API 🧩
+`cli.ts`:
 
 ```ts
-// Use the CLI programmatically
 import { useCli } from '@dephub/layer';
 import { readFile } from '@dephub/read';
 
@@ -81,13 +82,13 @@ await useCli({
 });
 ```
 
+`builder.ts`:
+
 ```ts
-// Or compose the builder / watcher directly
-import { useBuilder, useWatcher } from '@dephub/layer';
+import { useBuilder } from '@dephub/layer';
 import { readFile } from '@dephub/read';
 import { s } from '@dephub/schema';
 
-//builder
 const builder = await useBuilder({
   defaultOutDir: '.layer',
   name: 'my-docs',
@@ -99,18 +100,37 @@ const builder = await useBuilder({
 });
 
 await builder({
-  contentDir: './content',
+  contentDir: './content/services',
+  docType: 'Service',
+  exclude: ['temp'],
+  outDir: './dist/services',
   schemas: {
-    'tech-support': s.object({ title: s.string() }),
-    'web-development': s.object({ title: s.string() }),
+    'tech-support': s.object({
+      name: s.string(),
+      pages: s.number(),
+    }),
+    'web-development': s.object({
+      title: s.string(),
+    }),
   },
   transformers: {
-    'tech-support': (data) => ({ ...data, lang: 'es' }),
-    'web-development': (data) => ({ ...data, lang: 'en' }),
+    'tech-support': (data) =>
+      // `data` is fully typed as `{ name: string, pages: number }`
+      ({ ...data, processed: true }),
+    'web-development': (data) =>
+      // `data` is fully typed as `{ title: string }`
+      ({ ...data, processed: true }),
   },
 });
+```
 
-// watcher
+`watcher.ts`:
+
+```ts
+import { useWatcher } from '@dephub/layer';
+import { readFile } from '@dephub/read';
+import { s } from '@dephub/schema';
+
 const watcher = await useWatcher({
   defaultOutDir: '.layer',
   name: 'my-docs',
@@ -123,13 +143,25 @@ const watcher = await useWatcher({
 
 await watcher({
   contentDir: './content/services',
+  docType: 'Service',
+  exclude: ['temp'],
+  outDir: './dist/services',
   schemas: {
-    'tech-support': s.object({ title: s.string() }),
-    'web-development': s.object({ title: s.string() }),
+    'tech-support': s.object({
+      name: s.string(),
+      pages: s.number(),
+    }),
+    'web-development': s.object({
+      title: s.string(),
+    }),
   },
   transformers: {
-    'tech-support': (data) => ({ ...data, lang: 'es' }),
-    'web-development': (data) => ({ ...data, lang: 'en' }),
+    'tech-support': (data) =>
+      // `data` is fully typed as `{ name: string, pages: number }`
+      ({ ...data, processed: true }),
+    'web-development': (data) =>
+      // `data` is fully typed as `{ title: string }`
+      ({ ...data, processed: true }),
   },
 });
 ```
@@ -155,7 +187,6 @@ content/
     └── web-development/
         └── digital-presence.json
         └── online-store.json
-
 ```
 
 ## 📁 Output Structure
@@ -171,8 +202,6 @@ dist/
     └── web-development/
         └── digital-presence.json
         └── online-store.json
-
-
 ```
 
 ---

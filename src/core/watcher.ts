@@ -53,19 +53,19 @@ import type { LayerConfig, Watcher, WatcherConfig } from './types.ts';
  *   exclude: ['temp'],
  *   outDir: './dist/services',
  *   schemas: {
- *     books: s.object({
+ *     'tech-support': s.object({
  *       name: s.string(),
  *       pages: s.number(),
  *     }),
- *     services: s.object({
+ *     'web-development': s.object({
  *       title: s.string(),
  *     }),
  *   },
  *   transformers: {
- *     books: (data) =>
+ *     'tech-support': (data) =>
  *       // `data` is fully typed as `{ name: string, pages: number }`
- *       data,
- *     services: (data) =>
+ *       ({ ...data, processed: true }),
+ *     'web-development': (data) =>
  *       // `data` is fully typed as `{ title: string }`
  *       ({ ...data, processed: true }),
  *   },
