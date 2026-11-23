@@ -32,28 +32,28 @@
 
 ```sh
 # Build from the default config (layer.config.ts) and content directory
-npx layer build
+layer build
 
 # Build a specific content directory
-npx layer build ./content
+layer build ./content
 
 # Filter by document type, custom output dir, exclude folders
-npx layer build -d Service -o ./dist/services -e drafts temp
+layer build -d Service -o ./dist/services -e drafts temp
 
 # Watch for changes
-npx layer build -w
+layer build -w
 
 # Use a custom config file
-npx layer build -c ./config/layer.config.ts
+layer build -c ./config/layer.config.ts
 
 # Silent mode (errors still shown)
-npx layer build -s
+layer build -s
 ```
 
 **Config file** — `layer.config.ts`:
 
 ```ts
-import { defineConfig } from '@dephub/layer/config';
+import { defineConfig } from '@dephub/layer';
 
 export default defineConfig({
   contentDir: './content',
@@ -101,12 +101,12 @@ const builder = await useBuilder({
 await builder({
   contentDir: './content',
   schemas: {
-    es: s.object({ title: s.string() }),
-    en: s.object({ title: s.string() }),
+    'tech-support': s.object({ title: s.string() }),
+    'web-development': s.object({ title: s.string() }),
   },
   transformers: {
-    es: (data) => ({ ...data, lang: 'es' }),
-    en: (data) => ({ ...data, lang: 'en' }),
+    'tech-support': (data) => ({ ...data, lang: 'es' }),
+    'web-development': (data) => ({ ...data, lang: 'en' }),
   },
 });
 
@@ -122,14 +122,14 @@ const watcher = await useWatcher({
 });
 
 await watcher({
-  contentDir: './content',
+  contentDir: './content/services',
   schemas: {
-    es: s.object({ title: s.string() }),
-    en: s.object({ title: s.string() }),
+    'tech-support': s.object({ title: s.string() }),
+    'web-development': s.object({ title: s.string() }),
   },
   transformers: {
-    es: (data) => ({ ...data, lang: 'es' }),
-    en: (data) => ({ ...data, lang: 'en' }),
+    'tech-support': (data) => ({ ...data, lang: 'es' }),
+    'web-development': (data) => ({ ...data, lang: 'en' }),
   },
 });
 ```
@@ -148,18 +148,31 @@ await watcher({
 
 ```text
 content/
-├── es.json
-├── en.json
+└── services/
+    ├── tech-support/
+    │   └── custom-script-writing-automation.json
+    │   └── data-encryption-privacy-solutions.json
+    └── web-development/
+        └── digital-presence.json
+        └── online-store.json
+
 ```
 
 ## 📁 Output Structure
 
 ```text
-.layer/
-├── cache/
-│   └── timestamp.json
-├── es.json
-└── en.json
+dist/
+└── services/
+    ├── cache/
+    │   └── timestamp.json
+    ├── tech-support/
+    │   └── custom-script-writing-automation.json
+    │   └── data-encryption-privacy-solutions.json
+    └── web-development/
+        └── digital-presence.json
+        └── online-store.json
+
+
 ```
 
 ---
