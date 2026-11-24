@@ -111,7 +111,7 @@ export async function useCli<TParser = unknown>(
       const resolvedBuilderConfig = {
         ...builderConfig,
         silent: silent ?? builderConfig.silent,
-      } satisfies BuilderConfig;
+      } satisfies BuilderConfig<TParser>;
 
       if (watch) {
         const watcher = await useWatcher(resolvedBuilderConfig);

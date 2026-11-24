@@ -108,7 +108,7 @@ export async function parseConfig<
   TParser = unknown,
 >(
   name: string,
-  builderConfig: BuilderConfig,
+  builderConfig: BuilderConfig<TParser>,
   layerConfig: Partial<LayerConfig<TSchemas, TParser>>,
 ): Promise<ConfigSchema | { ok: false }> {
   const parsedData = await configSchema.safeParseAsync({

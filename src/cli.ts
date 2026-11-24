@@ -18,3 +18,5 @@ await useCli({
   pattern: '**/*.json',
   version,
 });
+
+// node src/cli.ts b

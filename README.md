@@ -168,11 +168,11 @@ await watcher({
 
 ### Available exports
 
-| Category   | Functions                                                                                            |
-| ---------- | ---------------------------------------------------------------------------------------------------- |
-| **Core**   | `useBuilder`, `useWatcher`, `useCli`                                                                 |
-| **Config** | `defineConfig`                                                                                       |
-| **Types**  | `Builder`, `BuilderConfig`, `BuilderContext`, `CliConfig`, `LayerConfig`, `Watcher`, `WatcherConfig` |
+| Category   | Functions                                                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Core**   | `useBuilder`, `useWatcher`, `useCli`                                                                                                   |
+| **Config** | `defineConfig`                                                                                                                         |
+| **Types**  | `Builder`, `BuilderConfig`, `BuilderContext`, `TaskContext`, `ResolverContext`, `CliConfig`, `LayerConfig`, `Watcher`, `WatcherConfig` |
 
 ---
 

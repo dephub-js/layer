@@ -34,9 +34,7 @@ export interface BuilderConfig<TParser = unknown> {
   pattern: string;
 
   /** Optional resolver to enrich or shape the parsed entry from build context. */
-  resolver?: (
-    ctx: Omit<BuilderContext<TParser>, 'changed' | 'importsMap'>,
-  ) => Promise<TParser> | TParser;
+  resolver?: (ctx: ResolverContext<TParser>) => Promise<TParser> | TParser;
 
   /**
    * Suppress progress logs (errors are always shown)
@@ -49,15 +47,15 @@ export interface BuilderConfig<TParser = unknown> {
    *
    * @default []
    */
-  tasks?: Array<(ctx: BuilderContext<TParser>) => Promise<void> | void>;
+  tasks?: Array<(ctx: TaskContext<TParser>) => Promise<void> | void>;
 
   /** * The current version of the builder or package. */
   version: string;
 }
 
 /**
- * Context object passed into asynchronous post-build tasks containing merged configuration,
- * maps, and environment parameters.
+ * Base context object containing merged layer and builder configuration,
+ * logging helper, and execution mode.
  */
 export interface BuilderContext<TParser = unknown>
   extends
@@ -71,7 +69,7 @@ export interface BuilderContext<TParser = unknown>
       TParser
     >,
     Pick<
-      BuilderConfig,
+      BuilderConfig<TParser>,
       | 'defaultOutDir'
       | 'name'
       | 'outExtension'
@@ -79,16 +77,6 @@ export interface BuilderContext<TParser = unknown>
       | 'pattern'
       | 'version'
     > {
-  /**
-   * Whether the current build produced any file changes.
-   */
-  changed: boolean;
-
-  /**
-   * A nested record mapping internal directories and file names to their relative output file paths.
-   */
-  importsMap: ImportsMap;
-
   /**
    * Emits a progress line prefixed with the builder name.
    */
@@ -160,6 +148,30 @@ export interface LayerConfig<
 }
 
 /**
+ * Context object passed into `resolver` for the entry currently being processed.
+ */
+export interface ResolverContext<
+  TParser = unknown,
+> extends BuilderContext<TParser> {
+  /** * Source file path currently being resolved. */
+  entry: string;
+}
+
+/**
+ * Context object passed into post-build `tasks` with build change status
+ * and generated output mappings.
+ */
+export interface TaskContext<
+  TParser = unknown,
+> extends BuilderContext<TParser> {
+  /** * Whether the current build produced any file changes. */
+  changed: boolean;
+
+  /** * A nested record mapping internal directories and file names to their relative output file paths. */
+  importsMap: ImportsMap;
+}
+
+/**
  * A watcher function returned by `useWatcher`.
  *
  * @example
@@ -172,4 +184,4 @@ export type Watcher<TParser = unknown> = Builder<TParser>;
 /**
  * Configuration options required to initialize the watcher core.
  */
-export type WatcherConfig<TParser> = BuilderConfig<TParser>;
+export type WatcherConfig<TParser = unknown> = BuilderConfig<TParser>;

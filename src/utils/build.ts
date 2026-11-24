@@ -5,7 +5,11 @@ import { path } from '@dephub/path';
 import { writeFile } from '@dephub/write';
 import { mkdir } from 'node:fs/promises';
 
-import type { BuilderContext } from '#/core/types.ts';
+import type {
+  BuilderContext,
+  ResolverContext,
+  TaskContext,
+} from '#/core/types.ts';
 
 import type { ConfigSchema } from './config.ts';
 
@@ -101,6 +105,7 @@ export async function buildLayer(
             contentDir,
             defaultOutDir,
             docType,
+            entry,
             exclude,
             log: (message) => logMessage(name, message),
             mode,
@@ -112,7 +117,7 @@ export async function buildLayer(
             schemas,
             transformers,
             version,
-          } satisfies Omit<BuilderContext, 'changed' | 'importsMap'>);
+          } satisfies ResolverContext);
         }
 
         if (!(await canAccess(path.join(outDir, internalDir)))) {
@@ -153,7 +158,7 @@ export async function buildLayer(
         schemas,
         transformers,
         version,
-      } satisfies BuilderContext);
+      } satisfies TaskContext);
     }
   } catch (error) {
     if (error instanceof Error) {
