@@ -12,7 +12,7 @@ import type { ConfigSchema } from './config.ts';
 import { canAccess } from './access.ts';
 import { useCache } from './cache.ts';
 import { resolveEntries } from './entries.ts';
-import { hasUnknownGroup } from './has.ts';
+import { hasErrorMessage, hasUnknownGroup } from './has.ts';
 import { logError, logMessage, logUpdate } from './log.ts';
 import { getMtime } from './mtime.ts';
 
@@ -29,6 +29,7 @@ export async function buildLayer(
     outExtension,
     parser,
     pattern,
+    resolver,
     schemas,
     tasks,
     transformers,
@@ -77,11 +78,41 @@ export async function buildLayer(
         let data = await parser(entry);
 
         if (schemas[internalDir]) {
-          data = await schemas[internalDir].parseAsync(data);
+          try {
+            data = await schemas[internalDir].parseAsync(data);
+          } catch (error) {
+            if (hasErrorMessage(error)) {
+              logError(
+                name,
+                `Schema validation failed in ${entry}: ${error.message}`,
+              );
+              return { changed, ok: false };
+            }
+            throw error;
+          }
         }
 
         if (transformers[internalDir]) {
           data = await transformers[internalDir](data);
+        }
+
+        if (resolver) {
+          data = await resolver({
+            contentDir,
+            defaultOutDir,
+            docType,
+            exclude,
+            log: (message) => logMessage(name, message),
+            mode,
+            name,
+            outDir,
+            outExtension,
+            parser,
+            pattern,
+            schemas,
+            transformers,
+            version,
+          } satisfies Omit<BuilderContext, 'changed' | 'importsMap'>);
         }
 
         if (!(await canAccess(path.join(outDir, internalDir)))) {

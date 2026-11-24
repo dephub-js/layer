@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { readFile } from '@dephub/read';
 
-import { useCli } from './core/cli.ts';
-import { description, name, version } from './utils/pkg.ts';
+import { useCli } from '#/core/cli.ts';
+import { description, name, version } from '#/utils/pkg.ts';
 
 await useCli({
   defaultConfigPath: 'layer.config.ts',

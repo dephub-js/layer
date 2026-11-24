@@ -75,24 +75,25 @@ function isValidConfig(config: unknown): config is Record<string, unknown> {
 const configSchema = s
   .object({
     configPath: s.string().optional(),
-    contentDir: s.string().default('./content'),
-    defaultOutDir: s.string(),
-    docType: s.string().default('Content'),
+    contentDir: s.string().nonempty().default('./content'),
+    defaultOutDir: s.string().nonempty(),
+    docType: s.string().nonempty().default('Content'),
     exclude: s
-      .array(s.string())
+      .array(s.string().nonempty())
       .default([])
       .transform((data) => data.filter(Boolean)),
-    name: s.string(),
+    name: s.string().nonempty(),
     ok: s.boolean().default(true),
-    outDir: s.string().optional(),
-    outExtension: s.templateLiteral(['.', s.string()]),
+    outDir: s.string().nonempty().optional(),
+    outExtension: s.templateLiteral(['.', s.string().min(1)]),
     parser: s.function(),
-    pattern: s.string(),
+    pattern: s.string().nonempty(),
+    resolver: s.function().optional(),
     schemas: s.record(s.string(), s.any()).default({}),
     silent: s.boolean().default(false),
     tasks: s.array(s.function()).default([]),
     transformers: s.record(s.string(), s.function()).default({}),
-    version: s.string(),
+    version: s.string().nonempty(),
   })
   .strict()
   .transform((data) => ({
@@ -119,6 +120,6 @@ export async function parseConfig<
     return parsedData.data;
   }
 
-  logError(name, parsedData.error.message);
+  logError(name, `Config validation failed: ${parsedData.error.message}`);
   return { ok: parsedData.success };
 }

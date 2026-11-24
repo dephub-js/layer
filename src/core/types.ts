@@ -18,30 +18,25 @@ export type Builder<TParser = unknown> = <
  * Configuration options required to initialize the builder core.
  */
 export interface BuilderConfig<TParser = unknown> {
-  /**
-   * The default directory where output files will be saved.
-   */
+  /** * The default directory where output files will be saved. */
   defaultOutDir: string;
 
-  /**
-   * The name of the tool or package (used for logging context).
-   */
+  /** * The name of the tool or package (used for logging context). */
   name: string;
 
-  /**
-   * The file extension for generated output files.
-   */
+  /** * The file extension for generated output files. */
   outExtension: `.${string}`;
 
-  /**
-   * Parser function to process source entries into buildable data.
-   */
+  /** * Parser function to process source entries into buildable data. */
   parser: (entry: string) => Promise<TParser> | TParser;
 
-  /**
-   * Glob pattern used to match content files.
-   */
+  /** * Glob pattern used to match content files.*/
   pattern: string;
+
+  /** Optional resolver to enrich or shape the parsed entry from build context. */
+  resolver?: (
+    ctx: Omit<BuilderContext<TParser>, 'changed' | 'importsMap'>,
+  ) => Promise<TParser> | TParser;
 
   /**
    * Suppress progress logs (errors are always shown)
@@ -56,9 +51,7 @@ export interface BuilderConfig<TParser = unknown> {
    */
   tasks?: Array<(ctx: BuilderContext<TParser>) => Promise<void> | void>;
 
-  /**
-   * The current version of the builder or package.
-   */
+  /** * The current version of the builder or package. */
   version: string;
 }
 
