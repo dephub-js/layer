@@ -1,7 +1,7 @@
 {
   "name": "@dephub/layer",
   "type": "module",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A tiny builder for transforming source content into typed, validated, and cache-aware layers — with first-class CLI, watcher, and programmatic APIs.",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
@@ -57,17 +57,17 @@
   },
   "dependencies": {
     "@dephub/cache": "^3.0.0",
-    "@dephub/colors": "^1.0.0",
-    "@dephub/command": "^3.0.0",
-    "@dephub/schema": "^1.0.0",
+    "@dephub/colors": "^1.0.1",
+    "@dephub/command": "^3.0.2",
     "@dephub/path": "^2.0.0",
     "@dephub/read": "^1.0.3",
+    "@dephub/schema": "^1.0.0",
     "@dephub/write": "^1.0.4"
   },
   "devDependencies": {
     "@dephub/eslint-ts": "^1.0.5",
     "@dephub/glob": "^1.0.2",
-    "@types/node": "^26.6.6",
+    "@types/node": "^26.6.7",
     "eslint": "^10.15.0",
     "prettier": "^3.10.1",
     "typescript": "6.0.3",

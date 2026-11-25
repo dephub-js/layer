@@ -3,6 +3,8 @@ import { useCwd } from '@dephub/path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
+import pkg from './package.json' with { type: 'json' };
+
 const entry = await glob(['src/**/*.ts', '!src/**/*.test.ts'], {
   absolute: true,
 });
@@ -35,6 +37,11 @@ export default defineConfig({
     },
     ssr: true,
     target: 'esnext',
+  },
+  define: {
+    __PKG_DESCRIPTION__: JSON.stringify(pkg.description),
+    __PKG_NAME__: JSON.stringify(pkg.name),
+    __PKG_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [dtsPlugin],
   resolve: {

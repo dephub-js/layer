@@ -2,13 +2,12 @@
 import { readFile } from '@dephub/read';
 
 import { useCli } from '#/core/cli.ts';
-import { description, name, version } from '#/utils/pkg.ts';
 
 await useCli({
   defaultConfigPath: 'layer.config.ts',
   defaultOutDir: '.layer',
-  description,
-  name: name.split('/')[1] ?? 'layer',
+  description: __PKG_DESCRIPTION__,
+  name: __PKG_NAME__.split('/')[1],
   outExtension: '.json',
   parser: async (entry) => {
     const raw = await readFile(entry);
@@ -16,5 +15,5 @@ await useCli({
     return JSON.parse(raw);
   },
   pattern: '**/*.json',
-  version,
+  version: __PKG_VERSION__,
 });
